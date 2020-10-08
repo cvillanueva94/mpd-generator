@@ -1,4 +1,4 @@
-var queue = require('queue')
+var queue = require('queue');
 const { shInfo, shSpawn } = require('./utils');
 
 var q = queue({
@@ -11,7 +11,7 @@ var width = 0;
 var height = 0;
 var bitrate = 0;
 var fps = 0;
-var resolution = ['240p'] //['720p', '480p', '360p'];
+var resolution = ['720p', '480p', '360p', '240p'];
 
 
 
@@ -20,9 +20,10 @@ var resolution = ['240p'] //['720p', '480p', '360p'];
  * 
  * @param {*} data 
  * 
+ * The folder containing the video must be named the same as the video.
  * data:{
- * path = "/media/krlos/DATOS1/project/streaming/videos/";
- * inputFile = "0x01A58";
+ * path = "/dir/personal/folder/"; 
+ * inputFile = "0x01A58"; 
  * format = ".mp4";
  * }
  */

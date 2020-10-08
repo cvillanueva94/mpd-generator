@@ -49,13 +49,10 @@ async function shInfo(filePath) {
             });
         });
         process.stdout.on('data', (data) => {
-            //console.log(`stdout: ${data}`);
             dataFinish += data.toString();;
         });
 
         process.stdout.on('end', function () {
-            console.log('Finished collecting data chunks.');
-            //console.log(dataFinish)
             var data = JSON.parse(dataFinish);
 
             //Datos generales
@@ -67,7 +64,6 @@ async function shInfo(filePath) {
             data.streams.forEach(element => {
                 switch (element.codec_type) {
                     case 'video':
-                        console.log('video');
 
                         videoPositions.push(element.index);
                         try { width = element.width; } catch (e) { }
@@ -77,7 +73,6 @@ async function shInfo(filePath) {
                         break;
 
                     case 'audio':
-                        console.log('audio');
 
                         audios.push({
                             index: element.index,
@@ -86,7 +81,6 @@ async function shInfo(filePath) {
                         break;
 
                     case 'subtitle':
-                        console.log('subtitle');
 
                         subs.push({
                             index: element.index,
@@ -100,7 +94,6 @@ async function shInfo(filePath) {
         });
 
         process.stderr.on('data', (data) => {
-            //console.log(`stderr: ${data}`);
         });
 
 
@@ -125,13 +118,11 @@ async function shSpawn(cmd, options) {
             // *** Process completed
             resolve(code);
         });
-        process.stdout.on('data', (data) => {
-            console.log(`stdout: ${data}`);
-        });
 
-        process.stderr.on('data', (data) => {
-            console.log(`stderr: ${data}`);
-        });
+        process.stdout.on('data', (data) => { });
+        process.stdout.on('end', function () { console.log(`finish`); })
+        process.stderr.on('data', (data) => { });
+
         process.on('error', function (err) {
             // *** Process creation failed
             reject(err);
