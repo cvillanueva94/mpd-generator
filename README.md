@@ -2,7 +2,7 @@
 
 Manifest generating system for live content and video (.mpd) that follow the guidelines of the DASH dynamic profile.
 
-[![npm](http://img.shields.io/npm/v/queue.svg?style=flat-square)](https://github.com/krlosvilla101994/mpd-generator)
+[![npm](http://img.shields.io/npm/v/mpd-generator.svg?style=flat-square)](https://www.npmjs.com/package/mpd-generator)
 
 Description
 
