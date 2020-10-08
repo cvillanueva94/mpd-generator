@@ -1,0 +1,31 @@
+{
+  "name": "mpd-generator",
+  "version": "1.0.0",
+  "description": "MPD manifest generator for video streaming using Dashjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krlosvilla101994/mpd-generator.git"
+  },
+  "keywords": [
+    "mpd",
+    "streaming",
+    "video",
+    "dashjs",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "Carlos Villanueva",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/krlosvilla101994/mpd-generator/issues"
+  },
+  "homepage": "https://github.com/krlosvilla101994/mpd-generator#readme",
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "queue": "^6.0.1"
+  }
+}
