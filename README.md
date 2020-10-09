@@ -14,14 +14,14 @@ Description
 var mpd_generator = require("mpd-generator");
 
 var data = {
-  path = "/dir/personal/folder/",
-  inputFile = "0x01A58",
-  format = ".mp4"
+  path: "/dir/personal/folder/",
+  inputFile: "0x01A58",
+  format: ".mp4",
 };
 var data1 = {
-  path = "/dir/personal/folder/",
-  inputFile = "0x01A59",
-  format = ".mp4"
+  path: "/dir/personal/folder/",
+  inputFile: "0x01A59",
+  format: ".mp4",
 };
 
 mpd_generator.main(data);

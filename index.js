@@ -11,7 +11,7 @@ var width = 0;
 var height = 0;
 var bitrate = 0;
 var fps = 0;
-var resolution = ['720p', '480p', '360p', '240p'];
+var resolution = ['240p']//['720p', '480p', '360p', '240p'];
 
 
 
@@ -22,9 +22,9 @@ var resolution = ['720p', '480p', '360p', '240p'];
  * 
  * The folder containing the video must be named the same as the video.
  * data:{
- * path = "/dir/personal/folder/"; 
- * inputFile = "0x01A58"; 
- * format = ".mp4";
+ * path: "/dir/personal/folder/", 
+ * inputFile: "0x01A58",
+ * format: ".mp4"
  * }
  */
 function main(data) {
@@ -119,6 +119,12 @@ async function generate(data) {
         '-frag-rap',
         '-profile',
         'live',
+        '-cprt',
+        'krlosvilla101994',
+        '-mpd-title',
+        'MPD generated with mpd-generator',
+        '-segment-name',
+        inputFile,
         '-out',
         path + inputFile + '/mpd/' + outputFile + formatMpd
     ];
