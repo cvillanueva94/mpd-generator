@@ -119,9 +119,9 @@ async function shSpawn(cmd, options) {
             resolve(code);
         });
 
-        process.stdout.on('data', (data) => { });
+        process.stdout.on('data', (data) => { console.log(`${data}`); });
         process.stdout.on('end', function () { console.log(`finish`); })
-        process.stderr.on('data', (data) => { });
+        process.stderr.on('data', (data) => { console.log(`${data}`); });
 
         process.on('error', function (err) {
             // *** Process creation failed
