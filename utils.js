@@ -119,9 +119,17 @@ async function shSpawn(cmd, options) {
             resolve(code);
         });
 
-        process.stdout.on('data', (data) => { console.log(`${data}`); });
+        process.stdout.on('data', (data) => { console.log(`bb${data}`); });
         process.stdout.on('end', function () { console.log(`finish`); })
-        process.stderr.on('data', (data) => { console.log(`${data}`); });
+        process.stderr.on('data', (data) => {
+
+            let percent = data.toString('utf8');
+            if (percent.includes("%]")) {
+                percent = percent.split('[')[1].split('%]')[0];
+                console.log(percent);
+            }
+            console.log(`aa${data}`);
+        });
 
         process.on('error', function (err) {
             // *** Process creation failed
