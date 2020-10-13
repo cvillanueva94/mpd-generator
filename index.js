@@ -123,8 +123,6 @@ async function generate(data) {
         'krlosvilla101994',
         '-mpd-title',
         'MPD generated with mpd-generator',
-        '-segment-name',
-        inputFile,
         '-out',
         path + inputFile + '/mpd/' + outputFile + formatMpd
     ];

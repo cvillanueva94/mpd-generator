@@ -4,7 +4,10 @@ Manifest generating system for live content and video (.mpd) that follow the gui
 
 [![npm](http://img.shields.io/npm/v/mpd-generator.svg?style=flat-square)](https://www.npmjs.com/package/mpd-generator)
 
-Description
+Require:
+
+  MP4Box https://github.com/gpac/gpac/wiki/MP4Box-Introduction
+  FFmpeg https://ffmpeg.org/
 
 ## Example
 
