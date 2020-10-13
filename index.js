@@ -86,19 +86,19 @@ async function generate(data) {
      */
     if (horizontal) {
         if (heightInitial >= 360 && heightInitial < 470) {
-            resolution = ['360p', '240'];
+            resolution = ['360p', '240p'];
         } else if (heightInitial >= 470 && heightInitial < 710) {
             resolution = ['480p', '360p', '240'];
         } else if (heightInitial >= 710) {
-            resolution = ['720p', '480p', '360p', '240'];
+            resolution = ['720p', '480p', '360p', '240p'];
         }
     } else {
         if (widthInitial >= 360 && widthInitial < 470) {
-            resolution = ['360p', '240'];
+            resolution = ['360p', '240p'];
         } else if (widthInitial >= 470 && widthInitial < 710) {
             resolution = ['480p', '360p', '240'];
         } else if (widthInitial >= 710) {
-            resolution = ['720p', '480p', '360p', '240'];
+            resolution = ['720p', '480p', '360p', '240p'];
         }
     }
 
