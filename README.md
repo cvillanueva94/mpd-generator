@@ -6,8 +6,6 @@ Manifest generating system for live content and video (.mpd) that follow the gui
 
 ## Require:
 
-Este modulo necesita tener instalado los siguientes programas para su correc
-
 MP4Box https://github.com/gpac/gpac/wiki/MP4Box-Introduction<br>
 
 FFmpeg https://ffmpeg.org/ <br>
@@ -31,7 +29,7 @@ Installation is done using the
 [`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
 
 ```bash
-$ npm install express
+$ npm install mpd-generator
 ```
 
 ## Installing
