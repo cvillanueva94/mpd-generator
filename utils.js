@@ -22,17 +22,18 @@ async function shInfo(filePath) {
         filePath
     ]
     return new Promise(function (resolve, reject) {
-        var width;
-        var height;
-        var duration;
-        var bit_rate;
-        var size;
-        var display_aspect_ratio;
-        var sample_aspect_ratio;
-        var videoPositions = [];
-        var audios = [];
-        var subs = [];
-        var dataFinish = '';
+        let width;
+        let height;
+        let duration;
+        let bit_rate;
+        let size;
+        let display_aspect_ratio;
+        let videoLanguage;
+        let sample_aspect_ratio;
+        let videoPositions = [];
+        let audios = [];
+        let subs = [];
+        let dataFinish = '';
         const process = spawn('ffprobe', options);
         process.on('close', function (code) {
             resolve({
@@ -41,11 +42,12 @@ async function shInfo(filePath) {
                 duration: duration,
                 bit_rate: bit_rate,
                 size: size,
-                videoPositions,
-                audios,
-                subs,
-                display_aspect_ratio,
-                sample_aspect_ratio
+                videoPositions: videoPositions,
+                audios: audios,
+                subs: subs,
+                display_aspect_ratio: display_aspect_ratio,
+                sample_aspect_ratio: sample_aspect_ratio,
+                videoLanguage: videoLanguage
             });
         });
         process.stdout.on('data', (data) => {
@@ -66,6 +68,7 @@ async function shInfo(filePath) {
                     case 'video':
 
                         videoPositions.push(element.index);
+                        try { videoLanguage = element.tags.language; } catch (e) { }
                         try { width = element.width; } catch (e) { }
                         try { height = element.height; } catch (e) { }
                         try { sample_aspect_ratio = element.sample_aspect_ratio; } catch (e) { }

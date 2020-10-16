@@ -41,26 +41,28 @@ function main(data) {
  * 
  * @param {*} data 
  * 
- * data:{
- * path = "./public/";
- * inputFile = "0x01A58";
- * format = ".mp4";
+ * data={
+ * path: "./public/",
+ * inputFile: "0x01A58",
+ * format: ".mp4"
  * }
  */
+
 async function generate(data) {
-    var path = data.path;
-    var inputFile = data.inputFile;
-    var outputFile = data.inputFile;
-    var horizontal = true;
-    var formatOrigin = data.format;
-    var format = '.mp4';
+    let path = data.path;
+    let inputFile = data.inputFile;
+    let outputFile = data.inputFile;
+    let horizontal = true;
+    let formatOrigin = data.format;
+    let format = '.mp4';
 
     //info video file
-    var widthInitial = 0;
-    var heightInitial = 0;
-    var aspect;
-    var size;
-    var subs;
+    let widthInitial = 0;
+    let heightInitial = 0;
+    let aspect;
+    let size;
+    let subs;
+    let videoLanguage;
 
     await shInfo(path + inputFile + '/' + inputFile + formatOrigin)
         .then(function (response) {
@@ -68,6 +70,7 @@ async function generate(data) {
             heightInitial = parseInt(response.height, 10);
             aspect = response.display_aspect_ratio;
             subs = response.subs;
+            videoLanguage = response.videoLanguage != null ? response.videoLanguage : 'en-US';
         })
         .catch(err => console.log(err));
 
@@ -88,7 +91,7 @@ async function generate(data) {
         if (heightInitial >= 360 && heightInitial < 470) {
             resolution = ['360p', '240p'];
         } else if (heightInitial >= 470 && heightInitial < 710) {
-            resolution = ['480p', '360p', '240'];
+            resolution = ['480p', '360p', '240p'];
         } else if (heightInitial >= 710) {
             resolution = ['720p', '480p', '360p', '240p'];
         }
@@ -96,7 +99,7 @@ async function generate(data) {
         if (widthInitial >= 360 && widthInitial < 470) {
             resolution = ['360p', '240p'];
         } else if (widthInitial >= 470 && widthInitial < 710) {
-            resolution = ['480p', '360p', '240'];
+            resolution = ['480p', '360p', '240p'];
         } else if (widthInitial >= 710) {
             resolution = ['720p', '480p', '360p', '240p'];
         }
@@ -256,6 +259,8 @@ async function generate(data) {
             path + inputFile + '/' + outputFile + '_' + resolutionX + format264,
             '-fps',
             fps,
+            '-lang',
+            videoLanguage,
             path + inputFile + '/' + outputFile + '_' + resolutionX + format
         ])
             .then(function (response) {
@@ -267,7 +272,7 @@ async function generate(data) {
                 }
             })
             .catch(err => console.log(err));
-        arrayMpd.push(path + inputFile + '/' + outputFile + '_' + resolutionX + format + '#video');
+        arrayMpd.push(path + inputFile + '/' + outputFile + '_' + resolutionX + format + '#video:id=' + resolutionX);
     }
 
     /**
