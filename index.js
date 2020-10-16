@@ -295,7 +295,7 @@ async function generate(data) {
             console.log(err));
     arrayMpd.push(path.resolve(dir + outputFile + '_audio' + format + '#audio'));
     //Se sacan los subtitulos si tiene
-    if (subs.length > 0) {
+    if (subs && subs.length > 0) {
         subs.forEach(async function (element) {
             arrayMpd.push(path.resolve(dir + outputFile + '_subs_' + element.index + '.vtt' + ':lang=' + (element.language == undefined ? "eng" : element.language)));
             await shSpawn('ffmpeg', [
