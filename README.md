@@ -6,6 +6,8 @@ Manifest generating system for live content and video (.mpd) that follow the gui
 
 [![Build Status](https://travis-ci.org/krlosvilla101994/mpd-generator.svg?branch=main)](https://travis-ci.org/krlosvilla101994/mpd-generator)
 
+[![dependencies Status](https://david-dm.org/krlosvilla101994/mpd-generator/status.svg)](https://david-dm.org/krlosvilla101994/mpd-generator)
+
 ## Require:
 
 MP4Box https://github.com/gpac/gpac/wiki/MP4Box-Introduction<br>
