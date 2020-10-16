@@ -7,5 +7,5 @@ let dir = path.resolve('public/0x01A58/0x01A58.mkv')
 return utils.shInfo(dir)
     .then(function (response) {
         console.log(response)
-        assert.ok(response.size == '8506580');
+        assert.ok(response.width == '1080');
     })
