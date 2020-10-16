@@ -1,10 +1,10 @@
 {
   "name": "mpd-generator",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "MPD manifest generator for video streaming using Dashjs",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test.js"
+    "test": "node tests/test.js"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
   "dependencies": {
     "assert": "^2.0.0",
     "child_process": "^1.0.2",
+    "path": "^0.12.7",
     "queue": "^6.0.1"
   }
 }

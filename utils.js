@@ -63,37 +63,40 @@ async function shInfo(filePath) {
             try { size = data.format.size; } catch (e) { }
 
             //Datos videos y audio
-            data.streams.forEach(element => {
-                switch (element.codec_type) {
-                    case 'video':
+            if (data.streams) {
+                data.streams.forEach(element => {
+                    switch (element.codec_type) {
+                        case 'video':
 
-                        videoPositions.push(element.index);
-                        try { videoLanguage = element.tags.language; } catch (e) { }
-                        try { width = element.width; } catch (e) { }
-                        try { height = element.height; } catch (e) { }
-                        try { sample_aspect_ratio = element.sample_aspect_ratio; } catch (e) { }
-                        try { display_aspect_ratio = element.display_aspect_ratio; } catch (e) { }
-                        break;
+                            videoPositions.push(element.index);
+                            try { videoLanguage = element.tags.language; } catch (e) { }
+                            try { width = element.width; } catch (e) { }
+                            try { height = element.height; } catch (e) { }
+                            try { sample_aspect_ratio = element.sample_aspect_ratio; } catch (e) { }
+                            try { display_aspect_ratio = element.display_aspect_ratio; } catch (e) { }
+                            break;
 
-                    case 'audio':
+                        case 'audio':
 
-                        audios.push({
-                            index: element.index,
-                            language: element.tags.language
-                        });
-                        break;
+                            audios.push({
+                                index: element.index,
+                                language: element.tags.language
+                            });
+                            break;
 
-                    case 'subtitle':
+                        case 'subtitle':
 
-                        subs.push({
-                            index: element.index,
-                            language: element.tags.language
-                        });
-                        break;
-                    default:
-                        break;
-                }
-            });
+                            subs.push({
+                                index: element.index,
+                                language: element.tags.language
+                            });
+                            break;
+                        default:
+                            break;
+                    }
+                });
+            }
+
         });
 
         process.stderr.on('data', (data) => {

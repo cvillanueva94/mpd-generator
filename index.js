@@ -1,5 +1,6 @@
 var queue = require('queue');
 const { shInfo, shSpawn } = require('./utils');
+const path = require('path');
 
 var q = queue({
     concurrency: 1
@@ -20,11 +21,10 @@ var resolution = ['240p']//['720p', '480p', '360p', '240p'];
  * 
  * @param {*} data 
  * 
- * The folder containing the video must be named the same as the video.
- * data:{
- * path: "/dir/personal/folder/", 
+ * data={
+ * path: "public/0x01A58",
  * inputFile: "0x01A58",
- * format: ".mp4"
+ * format: ".mkv"
  * }
  */
 function main(data) {
@@ -42,14 +42,16 @@ function main(data) {
  * @param {*} data 
  * 
  * data={
- * path: "./public/",
+ * path: "public/0x01A58",
  * inputFile: "0x01A58",
- * format: ".mp4"
+ * format: ".mkv"
  * }
  */
-
 async function generate(data) {
-    let path = data.path;
+    let dir = data.path;
+    if (!dir.endsWith('/')) {
+        dir += '/';
+    }
     let inputFile = data.inputFile;
     let outputFile = data.inputFile;
     let horizontal = true;
@@ -64,8 +66,9 @@ async function generate(data) {
     let subs;
     let videoLanguage;
 
-    await shInfo(path + inputFile + '/' + inputFile + formatOrigin)
+    await shInfo(path.resolve(dir + inputFile + formatOrigin))
         .then(function (response) {
+            console.log(response)
             widthInitial = parseInt(response.width, 10);
             heightInitial = parseInt(response.height, 10);
             aspect = response.display_aspect_ratio;
@@ -107,7 +110,7 @@ async function generate(data) {
 
 
     //Creando la carpeta par guardar el manifiesto
-    await shSpawn('mkdir', [path + inputFile + '/mpd/'])
+    await shSpawn('mkdir', [path.resolve(dir + 'mpd/')])
         .catch(err => console.log(err));
 
     /**
@@ -127,7 +130,7 @@ async function generate(data) {
         '-mpd-title',
         'MPD generated with mpd-generator',
         '-out',
-        path + inputFile + '/mpd/' + outputFile + formatMpd
+        path.resolve(dir + '/mpd/' + outputFile + formatMpd)
     ];
 
 
@@ -217,7 +220,7 @@ async function generate(data) {
          */
         await shSpawn('x264', [
             '--output',
-            path + inputFile + '/' + outputFile + '_' + resolutionX + format264,
+            path.resolve(dir + outputFile + '_' + resolutionX + format264),
             '--fps',
             fps,
             '--preset',
@@ -235,7 +238,7 @@ async function generate(data) {
             '--no-scenecut',
             '--vf',
             'resize:width=' + width + ',fittobox=width',// + height,
-            path + inputFile + '/' + inputFile + formatOrigin
+            path.resolve(dir + inputFile + formatOrigin)
         ])
             .then(function (response) {
                 if (response == 0) {
@@ -256,12 +259,12 @@ async function generate(data) {
          */
         await shSpawn('MP4Box', [
             '-add',
-            path + inputFile + '/' + outputFile + '_' + resolutionX + format264,
+            path.resolve(dir + outputFile + '_' + resolutionX + format264),
             '-fps',
             fps,
             '-lang',
             videoLanguage,
-            path + inputFile + '/' + outputFile + '_' + resolutionX + format
+            path.resolve(dir + outputFile + '_' + resolutionX + format)
         ])
             .then(function (response) {
                 if (response == 0) {
@@ -272,7 +275,7 @@ async function generate(data) {
                 }
             })
             .catch(err => console.log(err));
-        arrayMpd.push(path + inputFile + '/' + outputFile + '_' + resolutionX + format + '#video:id=' + resolutionX);
+        arrayMpd.push(path.resolve(dir + outputFile + '_' + resolutionX + format + '#video:id=' + resolutionX));
     }
 
     /**
@@ -282,27 +285,27 @@ async function generate(data) {
      */
     await shSpawn('MP4Box', [
         '-add',
-        path + inputFile + '/' + inputFile + formatOrigin + '#audio',
-        path + inputFile + '/' + outputFile + '_audio' + format,
+        path.resolve(dir + inputFile + formatOrigin + '#audio'),
+        path.resolve(dir + outputFile + '_audio' + format),
     ])
         .then(function (response) {
             console.log(response)
         })
         .catch(err =>
             console.log(err));
-    arrayMpd.push(path + inputFile + '/' + outputFile + '_audio' + format + '#audio');
+    arrayMpd.push(path.resolve(dir + outputFile + '_audio' + format + '#audio'));
     //Se sacan los subtitulos si tiene
     if (subs.length > 0) {
         subs.forEach(async function (element) {
-            arrayMpd.push(path + inputFile + '/' + outputFile + '_subs_' + element.index + '.vtt' + ':lang=' + (element.language == undefined ? "eng" : element.language));
+            arrayMpd.push(path.resolve(dir + outputFile + '_subs_' + element.index + '.vtt' + ':lang=' + (element.language == undefined ? "eng" : element.language)));
             await shSpawn('ffmpeg', [
                 '-i',
-                path + inputFile + '/' + inputFile + formatOrigin,
+                path.resolve(dir + inputFile + formatOrigin),
                 '-map',
                 '0:' + element.index,
                 '-vn',
                 '-an',
-                path + inputFile + '/' + outputFile + '_subs_' + element.index + '.vtt',
+                path.resolve(dir + outputFile + '_subs_' + element.index + '.vtt'),
             ]).then(function (response) { })
                 .catch(err =>
                     console.log(err)

@@ -3,17 +3,21 @@
 Manifest generating system for live content and video (.mpd) that follow the guidelines of the DASH dynamic profile.
 
 [![npm](http://img.shields.io/npm/v/mpd-generator.svg?style=flat-square)](https://www.npmjs.com/package/mpd-generator)
-
 [![Build Status](https://travis-ci.org/krlosvilla101994/mpd-generator.svg?branch=main)](https://travis-ci.org/krlosvilla101994/mpd-generator)
-
 [![dependencies Status](https://david-dm.org/krlosvilla101994/mpd-generator/status.svg)](https://david-dm.org/krlosvilla101994/mpd-generator)
+
+## Overview
+
+This module generates an mpd manifest for using [Dash.js](https://github.com/Dash-Industry-Forum/dash.js/wiki) from a video.
+
+The manifest that is generated contains 720p, 480p, 360p and 240p resolutions as long as the original video allows it. Example: a video with 480p resolution will generate a manifesto with 480p, 360p and 240p resolutions.
+
+The module implements [Queue](https://www.npmjs.com/package/queue) for the conversion of the videos.
 
 ## Require:
 
 MP4Box https://github.com/gpac/gpac/wiki/MP4Box-Introduction<br>
-
 FFmpeg https://ffmpeg.org/ <br>
-
 X264 https://www.videolan.org/developers/x264.html<br>
 
 <br>
@@ -71,16 +75,10 @@ $ npm i mpd-generator --save
 var mpd_generator = require("mpd-generator");
 
 var data = {
-  path: "/dir/personal/folder/",
+  path: "public/0x01A58",
   inputFile: "0x01A58",
-  format: ".mp4",
-};
-var data1 = {
-  path: "/dir/personal/folder/",
-  inputFile: "0x01A59",
-  format: ".mp4",
+  format: ".mkv",
 };
 
 mpd_generator.main(data);
-mpd_generator.main(data1);
 ```

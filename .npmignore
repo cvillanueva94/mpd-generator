@@ -1,0 +1,10 @@
+#Videos
+*.mkv
+*.mp4
+*.mpd
+*.264
+*.m4s
+
+#Folders
+tests
+public
