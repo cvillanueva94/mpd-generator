@@ -16,9 +16,8 @@ The module implements [Queue](https://www.npmjs.com/package/queue) for the conve
 
 ## Require:
 
-MP4Box https://github.com/gpac/gpac/wiki/MP4Box-Introduction<br>
+Bento4 MP4 https://www.bento4.com/<br>
 FFmpeg https://ffmpeg.org/ <br>
-X264 https://www.videolan.org/developers/x264.html<br>
 
 <br>
 

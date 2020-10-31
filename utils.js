@@ -3,6 +3,7 @@ var ffprobe = require('ffprobe'),
     ffprobeStatic = require('ffprobe-static');
 exports.shInfo = shInfo;
 exports.shSpawn = shSpawn;
+exports.getResolution = getResolution;
 
 /**
  * Get the necessary information from a video
@@ -97,7 +98,7 @@ async function shSpawn(cmd, options) {
                 percent = percent.split('[')[1].split('%]')[0];
                 console.log(percent);
             }
-            console.log(`aa${data}`);
+            console.log(`${data}`);
         });
 
         process.on('error', function (err) {
@@ -105,4 +106,71 @@ async function shSpawn(cmd, options) {
             reject(err);
         });
     });
+}
+
+
+/**
+ resolution        240p        360p        480p        720p        1080p
+ width             426         640         854         1280        1920
+Video Bitrates                   
+Maximum            700 Kbps    1000 Kbps   2000 Kbps   4000 Kbps   6000 Kbps
+Recommended        400 Kbps    750 Kbps    1000 Kbps   2500 Kbps   4500 Kbps
+Minimum            300 Kbps    400 Kbps    500 Kbps    1500 Kbps   3000 Kbps
+ */
+
+function getResolution(width, height, resolution) {
+    var result = {
+        width: 0, height: 0,
+        bitrate: [], fps: 30
+    }
+    let res;
+    switch (resolution) {
+        case '240p':
+            res = xY(width, height, 426);
+            result.width = res.width;
+            result.height = res.height;
+            result.bitrate = [300, 400, 700]
+            break;
+        case '360p':
+            res = xY(width, height, 640);
+            result.width = res.width;
+            result.height = res.height;
+            result.bitrate = [400, 750, 1000]
+            break;
+        case '480p':
+            res = xY(width, height, 854);
+            result.width = res.width;
+            result.height = res.height;
+            result.bitrate = [500, 1000, 2000]
+            break;
+        case '720p':
+            res = xY(width, height, 1280);
+            result.width = res.width;
+            result.height = res.height;
+            result.bitrate = [1500, 2500, 4000]
+            break;
+        case '1080p':
+            res = xY(width, height, 1920);
+            result.width = res.width;
+            result.height = res.height;
+            result.bitrate = [3000, 4500, 6000]
+            break;
+    }
+    return result;
+}
+
+/**
+ * 
+ * @param {Integer} widthO width del video 
+ * @param {Integer} heightO height del video
+ * @param {Integer} width width segun la resolucion a la que se quiere convertir
+ */
+function xY(widthO, heightO, width) {
+    let a = widthO / width;
+    let b = heightO / a;
+    let c = parseInt(b);
+    if (c % 2) {
+        return xY(widthO, heightO, width + 1)
+    }
+    return { width: width, height: c };
 }
