@@ -1,6 +1,6 @@
 {
   "name": "mpd-generator",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "MPD manifest generator for video streaming using Dashjs",
   "main": "index.js",
   "scripts": {

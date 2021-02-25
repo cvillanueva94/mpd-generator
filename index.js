@@ -29,13 +29,6 @@ var notification = null;
  * notification: "http://localhost:7777", || null
  * }
  */
-let data = {
-    path: "public/0x01A58",
-    inputFile: "0x01A58",
-    format: ".mkv",
-    notification: "http://localhost:7777",
-}
-main(data)
 
 function main(data) {
     q.push(async function (cb) {
