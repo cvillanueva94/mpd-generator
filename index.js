@@ -1,6 +1,7 @@
 var queue = require('queue');
 const { shInfo, shSpawn, getResolution } = require('./utils');
 const path = require('path');
+const fs = require('fs');
 
 var q = queue({
     concurrency: 1
@@ -28,6 +29,14 @@ var notification = null;
  * notification: "http://localhost:7777", || null
  * }
  */
+let data = {
+    path: "public/0x01A58",
+    inputFile: "0x01A58",
+    format: ".mkv",
+    notification: "http://localhost:7777",
+}
+main(data)
+
 function main(data) {
     q.push(async function (cb) {
         await generate(data)
@@ -250,6 +259,16 @@ async function generate(data) {
                 console.log(`************************************
 ***************resize ${resolutionX} finished ***************
 ************************************`)
+                fs.readFile(dir + 'mpd/manifest.mpd', 'utf-8', function (err, data) {
+                    if (err) throw err;
+
+                    var newValue = data.replace(/initialization="/g, 'initialization="' + outputFile + '_');
+                    newValue = newValue.replace(/ media="/g, ' media="' + outputFile + '_');
+                    fs.writeFile(dir + 'mpd/manifest2.mpd', newValue, 'utf-8', function (err) {
+                        if (err) throw err;
+                        console.log('filelistAsync complete');
+                    });
+                });
             }
         })
         .catch(err => console.log(err));
