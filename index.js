@@ -257,7 +257,7 @@ async function generate(data) {
 
                     var newValue = data.replace(/initialization="/g, 'initialization="' + outputFile + '_');
                     newValue = newValue.replace(/ media="/g, ' media="' + outputFile + '_');
-                    fs.writeFile(dir + 'mpd/manifest2.mpd', newValue, 'utf-8', function (err) {
+                    fs.writeFile(dir + 'mpd/' + outputFile + '.mpd', newValue, 'utf-8', function (err) {
                         if (err) throw err;
                         console.log('filelistAsync complete');
                     });
