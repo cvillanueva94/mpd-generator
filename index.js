@@ -26,7 +26,7 @@ var notification = null;
  * path: "public/0x01A58",
  * inputFile: "0x01A58",
  * format: ".mkv",
- * notification: "http://localhost:7777", || null
+ * notification: emiter
  * }
  */
 
@@ -48,9 +48,10 @@ function main(data) {
  * path: "public/0x01A58",
  * inputFile: "0x01A58",
  * format: ".mkv",
- * notification: "http://localhost:7777", || null
+ * notification: emiter
  * }
  */
+
 async function generate(data) {
     let dir = data.path;
     if (!dir.endsWith('/')) {
@@ -65,6 +66,11 @@ async function generate(data) {
     let formatOrigin = data.format;
     let format = '.mp4';
 
+    //%
+    let percent = 0;
+    let count = 0;
+    let step = 3;
+
     //info video file
     let widthInitial = 0;
     let heightInitial = 0;
@@ -72,15 +78,17 @@ async function generate(data) {
     let size;
     let subs;
     let videoLanguage;
+    let frames;
 
     await shInfo(path.resolve(dir + inputFile + formatOrigin))
         .then(function (response) {
-            console.log(response)
+            console.log(response);
             widthInitial = parseInt(response.width, 10);
             heightInitial = parseInt(response.height, 10);
             aspect = response.display_aspect_ratio;
             subs = response.subs;
             videoLanguage = response.videoLanguage != 'und' ? response.videoLanguage : 'en-US';
+            frames = response.frames;
         })
         .catch(err => console.log(err));
 
@@ -115,11 +123,7 @@ async function generate(data) {
         }
     }
 
-
-    // //Creando la carpeta par guardar el manifiesto
-    // await shSpawn('mkdir', [path.resolve(dir + 'mpd/')])
-    //     .catch(err => console.log(err));
-
+    step += resolution.length * 3 * 2;
     /**
      * Comando para ejecutar la creacion del manifiesto
      * a este array se le anadira las partes de los videos, 
@@ -179,13 +183,21 @@ async function generate(data) {
                 '-b:v', bitrate[j] * 2 + 'k', '-maxrate', bitrate[j] * 2 + 'k',
                 '-bufsize', bitrate[j] + 'k', '-vf', 'scale=' + width + ':' + height,
                 path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j] + format),
-            ])
+            ], frames)
                 .then(function (response) {
                     if (response == 0) {
                         console.log(`************************************
                 ***************Se crea el .264 de ${resolutionX} ***************
                 ************************************`)
                         convertFlag = true;
+                        count++;
+                        percent = parseInt(count * 100 / step);
+                        if (data.notification) {
+                            data.notification.emit('progessVideoConvert', {
+                                uuid: data.outputFile,
+                                value: percent
+                            });
+                        }
                     }
                 })
                 .catch(err =>
@@ -206,6 +218,14 @@ async function generate(data) {
                     .then(function (response) {
                         if (response == 0) {
                             convertMp4 = true;
+                            count++;
+                            percent = parseInt(count * 100 / step);
+                            if (data.notification) {
+                                data.notification.emit('progessVideoConvert', {
+                                    uuid: data.outputFile,
+                                    value: percent
+                                });
+                            }
                             console.log(
                                 `************************************
                 ***************Se crea el .mp4 desde .264 ${resolutionX} ***************
@@ -232,7 +252,15 @@ async function generate(data) {
         path.resolve(dir + outputFile + '_audio' + format),
     ])
         .then(function (response) {
-            console.log(response)
+            console.log(response);
+            count++;
+            percent = parseInt(count * 100 / step);
+            if (data.notification) {
+                data.notification.emit('progessVideoConvert', {
+                    uuid: data.outputFile,
+                    value: percent
+                });
+            }
         })
         .catch(err =>
             console.log(err));
@@ -248,6 +276,14 @@ async function generate(data) {
                     `************************************
                     ***************Se crea el .mp4 desde .264 ${resolutionX} ***************
                     ************************************`);
+                count++;
+                percent = parseInt(count * 100 / step);
+                if (data.notification) {
+                    data.notification.emit('progessVideoConvert', {
+                        uuid: data.outputFile,
+                        value: percent
+                    });
+                }
             }
         })
     arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_audio' + format));
@@ -261,7 +297,14 @@ async function generate(data) {
 ************************************`)
                 fs.readFile(dir + 'mpd/manifest.mpd', 'utf-8', function (err, data) {
                     if (err) throw err;
-
+                    count++;
+                    percent = parseInt(count * 100 / step);
+                    if (data.notification) {
+                        data.notification.emit('progessVideoConvert', {
+                            uuid: data.outputFile,
+                            value: percent
+                        });
+                    }
                     var newValue = data.replace(/initialization="/g, 'initialization="' + outputFile + '_');
                     newValue = newValue.replace(/ media="/g, ' media="' + outputFile + '_');
                     fs.writeFile(dir + 'mpd/' + outputFile + '.mpd', newValue, 'utf-8', function (err) {
