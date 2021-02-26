@@ -193,8 +193,8 @@ async function generate(data) {
                         count++;
                         percent = parseInt(count * 100 / step);
                         if (data.notification) {
-                            data.notification.emit('progessVideoConvert', {
-                                uuid: data.outputFile,
+                            data.notification.emit('progressVideoConvert', {
+                                uuid: data.inputFile,
                                 value: percent
                             });
                         }
@@ -221,8 +221,8 @@ async function generate(data) {
                             count++;
                             percent = parseInt(count * 100 / step);
                             if (data.notification) {
-                                data.notification.emit('progessVideoConvert', {
-                                    uuid: data.outputFile,
+                                data.notification.emit('progressVideoConvert', {
+                                    uuid: data.inputFile,
                                     value: percent
                                 });
                             }
@@ -256,8 +256,8 @@ async function generate(data) {
             count++;
             percent = parseInt(count * 100 / step);
             if (data.notification) {
-                data.notification.emit('progessVideoConvert', {
-                    uuid: data.outputFile,
+                data.notification.emit('progressVideoConvert', {
+                    uuid: data.inputFile,
                     value: percent
                 });
             }
@@ -279,8 +279,8 @@ async function generate(data) {
                 count++;
                 percent = parseInt(count * 100 / step);
                 if (data.notification) {
-                    data.notification.emit('progessVideoConvert', {
-                        uuid: data.outputFile,
+                    data.notification.emit('progressVideoConvert', {
+                        uuid: data.inputFile,
                         value: percent
                     });
                 }
@@ -300,8 +300,8 @@ async function generate(data) {
                     count++;
                     percent = parseInt(count * 100 / step);
                     if (data.notification) {
-                        data.notification.emit('progessVideoConvert', {
-                            uuid: data.outputFile,
+                        data.notification.emit('progressVideoConvert', {
+                            uuid: data.inputFile,
                             value: percent
                         });
                     }
