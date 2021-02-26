@@ -110,12 +110,12 @@ async function shSpawn(cmd, options) {
 
 
 /**
- resolution        240p        360p        480p        720p        1080p
- width             426         640         854         1280        1920
+ resolution       144p      240p        360p        480p        720p        1080p
+ width            256       426         640         854         1280        1920
 Video Bitrates                   
-Maximum            700 Kbps    1000 Kbps   2000 Kbps   4000 Kbps   6000 Kbps
-Recommended        400 Kbps    750 Kbps    1000 Kbps   2500 Kbps   4500 Kbps
-Minimum            300 Kbps    400 Kbps    500 Kbps    1500 Kbps   3000 Kbps
+Maximum           80Kbs     700 Kbps    1000 Kbps   2000 Kbps   4000 Kbps   6000 Kbps
+Recommended       90Kbs     400 Kbps    750 Kbps    1000 Kbps   2500 Kbps   4500 Kbps
+Minimum           100Kbs    300 Kbps    400 Kbps    500 Kbps    1500 Kbps   3000 Kbps
  */
 
 function getResolution(width, height, resolution) {
@@ -125,6 +125,12 @@ function getResolution(width, height, resolution) {
     }
     let res;
     switch (resolution) {
+        case '144p':
+            res = xY(width, height, 256);
+            result.width = res.width;
+            result.height = res.height;
+            result.bitrate = [80, 90, 100]
+            break;
         case '240p':
             res = xY(width, height, 426);
             result.width = res.width;
@@ -169,7 +175,7 @@ function xY(widthO, heightO, width) {
     let a = widthO / width;
     let b = heightO / a;
     let c = parseInt(b);
-    if (c % 2) {
+    if (c % 2 || width % 2) {
         return xY(widthO, heightO, width + 1)
     }
     return { width: width, height: c };

@@ -99,19 +99,19 @@ async function generate(data) {
      */
     if (horizontal) {
         if (heightInitial >= 360 && heightInitial < 470) {
-            resolution = ['360p', '240p'];
+            resolution = ['360p', '240p', '144p'];
         } else if (heightInitial >= 470 && heightInitial < 710) {
-            resolution = ['480p', '360p', '240p'];
+            resolution = ['480p', '360p', '240p', '144p'];
         } else if (heightInitial >= 710) {
-            resolution = ['720p', '480p', '360p', '240p'];
+            resolution = ['720p', '480p', '360p', '240p', '144p'];
         }
     } else {
         if (widthInitial >= 360 && widthInitial < 470) {
-            resolution = ['360p', '240p'];
+            resolution = ['360p', '240p', '144p'];
         } else if (widthInitial >= 470 && widthInitial < 710) {
-            resolution = ['480p', '360p', '240p'];
+            resolution = ['480p', '360p', '240p', '144p'];
         } else if (widthInitial >= 710) {
-            resolution = ['720p', '480p', '360p', '240p'];
+            resolution = ['720p', '480p', '360p', '240p', '144p'];
         }
     }
 
@@ -139,17 +139,17 @@ async function generate(data) {
      * 
      * Por ahora todo esta x el recomendado de lo que se muestra a continuacion
      *  
-                        240p       360p        480p        720p        1080p
-        Resolution      426 x 240   640 x 360   854x480     1280x720    1920x1080
+                        144p        240p       360p        480p        720p        1080p
+        Resolution      256x144    426 x 240   640 x 360   854x480     1280x720    1920x1080
         Video Bitrates                   
-        Maximum         700 Kbps    1000 Kbps   2000 Kbps   4000 Kbps   6000 Kbps
-        Recommended     400 Kbps    750 Kbps    1000 Kbps   2500 Kbps   4500 Kbps
-        Minimum         300 Kbps    400 Kbps    500 Kbps    1500 Kbps   3000 Kbps
+        Maximum         100Kbs     700 Kbps    1000 Kbps   2000 Kbps   4000 Kbps   6000 Kbps
+        Recommended     90Kbs      400 Kbps    750 Kbps    1000 Kbps   2500 Kbps   4500 Kbps
+        Minimum         80Kbs      300 Kbps    400 Kbps    500 Kbps    1500 Kbps   3000 Kbps
      */
 
     for (var i = 0; i < resolution.length; i++) {
         var resolutionX = resolution[i];
-        let a = getResolution(widthInitial, widthInitial, resolutionX);
+        let a = getResolution(widthInitial, heightInitial, resolutionX);
         console.log(a)
         width = a.width;
         height = a.height;
@@ -160,15 +160,17 @@ async function generate(data) {
          * Recorremos los bitrate, para convertir los videos
          */
         for (var j = 0; j < bitrate.length; j++) {
+            let convertFlag = false;
+            let convertMp4 = false;
             /**
-                    * Vamos a probar convertir un video
-                    * Manteniendo el ancho
-                    * 
-                    * resize:width=720,fittobox=width
-                    * 
-                    * Se crea el .264 desde el formatio original en las 
-                    * diferentes resoluciones
-                    */
+            * Vamos a probar convertir un video
+            * Manteniendo el ancho
+            * 
+            * resize:width=720,fittobox=width
+            * 
+            * Se crea el .264 desde el formatio original en las 
+            * diferentes resoluciones
+            */
             await shSpawn('ffmpeg', [
                 '-i',
                 path.resolve(dir + inputFile + formatOrigin),
@@ -183,33 +185,38 @@ async function generate(data) {
                         console.log(`************************************
                 ***************Se crea el .264 de ${resolutionX} ***************
                 ************************************`)
+                        convertFlag = true;
                     }
                 })
                 .catch(err =>
                     console.log(err)
                 );
 
+            if (convertFlag) {
+                /**
+                 * 
+                 * Se genere el mp4 desde el .264 creado anteriormente
+                 * 
+                 */
+                await shSpawn('mp4fragment', [
+                    path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j] + format),
 
-            /**
-             * 
-             * Se genere el mp4 desde el .264 creado anteriormente
-             * 
-             */
-            await shSpawn('mp4fragment', [
-                path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j] + format),
-
-                path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j] + format)
-            ])
-                .then(function (response) {
-                    if (response == 0) {
-                        console.log(
-                            `************************************
+                    path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j] + format)
+                ])
+                    .then(function (response) {
+                        if (response == 0) {
+                            convertMp4 = true;
+                            console.log(
+                                `************************************
                 ***************Se crea el .mp4 desde .264 ${resolutionX} ***************
                 ************************************`);
-                    }
-                })
-                .catch(err => console.log(err));
-            arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j] + format));
+                        }
+                    })
+                    .catch(err => console.log(err));
+                if (convertMp4) {
+                    arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j] + format));
+                }
+            }
         }
     }
 
