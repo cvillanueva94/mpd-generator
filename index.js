@@ -295,7 +295,7 @@ async function generate(data) {
                 console.log(`************************************
 ***************resize ${resolutionX} finished ***************
 ************************************`)
-                fs.readFile(dir + 'mpd/manifest.mpd', 'utf-8', function (err, data) {
+                fs.readFile(dir + 'mpd/manifest.mpd', 'utf-8', function (err, dataFile) {
                     if (err) throw err;
                     count++;
                     percent = parseInt(count * 100 / step);
@@ -305,7 +305,7 @@ async function generate(data) {
                             value: percent
                         });
                     }
-                    var newValue = data.replace(/initialization="/g, 'initialization="' + outputFile + '_');
+                    var newValue = dataFile.replace(/initialization="/g, 'initialization="' + outputFile + '_');
                     newValue = newValue.replace(/ media="/g, ' media="' + outputFile + '_');
                     fs.writeFile(dir + 'mpd/' + outputFile + '.mpd', newValue, 'utf-8', function (err) {
                         if (err) throw err;
