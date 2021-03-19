@@ -384,7 +384,12 @@ async function generate(data) {
             '-c', 'copy', '-map', '0:v:0', '-map', '1:a:0',
             path.resolve(dir + 'download/' + videos[i].name),
         ]).catch(err => console.log(err));
-        //elimino el video origen
+        fileToDelete.push(path.resolve(dir + 'download/' + videos[i].name));
+        //comprimo el download
+        await shSpawn('zip', [
+            path.resolve(dir + 'download/' + videos[i].name + '.zip'),
+            path.resolve(dir + 'download/' + videos[i].name),
+        ]).catch(err => console.log(err));
     }
     for (let i = 0; i < fileToDelete.length; i++) {
         await shSpawn('rm', [fileToDelete[i]]).catch(err => console.log(err));
