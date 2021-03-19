@@ -57,14 +57,6 @@ function main(data) {
  * }
  */
 
-generate({
-    path: "public/0x01A58",
-    inputFile: "0x01A58",
-    format: ".mp4",
-    resolutions: ['720p', '480p'],
-    qualities: ['medium', 'low'],
-    notification: ''
-})
 async function generate(data) {
     let dir = data.path;
     if (!dir.endsWith('/')) {
