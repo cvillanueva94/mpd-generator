@@ -96,9 +96,7 @@ async function shSpawn(cmd, options) {
             let percent = data.toString('utf8');
             if (percent.includes("%]")) {
                 percent = percent.split('[')[1].split('%]')[0];
-                console.log(percent);
             }
-            console.log(`${data}`);
         });
 
         process.on('error', function (err) {

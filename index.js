@@ -82,7 +82,6 @@ async function generate(data) {
 
     await shInfo(path.resolve(dir + inputFile + formatOrigin))
         .then(function (response) {
-            console.log(response);
             widthInitial = parseInt(response.width, 10);
             heightInitial = parseInt(response.height, 10);
             aspect = response.display_aspect_ratio;
@@ -154,7 +153,6 @@ async function generate(data) {
     for (var i = 0; i < resolution.length; i++) {
         var resolutionX = resolution[i];
         let a = getResolution(widthInitial, heightInitial, resolutionX);
-        console.log(a)
         width = a.width;
         height = a.height;
         bitrate = a.bitrate;
@@ -186,9 +184,6 @@ async function generate(data) {
             ], frames)
                 .then(function (response) {
                     if (response == 0) {
-                        console.log(`************************************
-                ***************Se crea el .264 de ${resolutionX} ***************
-                ************************************`)
                         convertFlag = true;
                         count++;
                         percent = parseInt(count * 100 / step);
@@ -200,9 +195,7 @@ async function generate(data) {
                         }
                     }
                 })
-                .catch(err =>
-                    console.log(err)
-                );
+                .catch(err => console.log(err));
 
             if (convertFlag) {
                 /**
@@ -226,10 +219,6 @@ async function generate(data) {
                                     value: percent
                                 });
                             }
-                            console.log(
-                                `************************************
-                ***************Se crea el .mp4 desde .264 ${resolutionX} ***************
-                ************************************`);
                         }
                     })
                     .catch(err => console.log(err));
@@ -252,7 +241,6 @@ async function generate(data) {
         path.resolve(dir + outputFile + '_audio' + format),
     ])
         .then(function (response) {
-            console.log(response);
             count++;
             percent = parseInt(count * 100 / step);
             if (data.notification) {
@@ -262,8 +250,7 @@ async function generate(data) {
                 });
             }
         })
-        .catch(err =>
-            console.log(err));
+        .catch(err => console.log(err));
 
     await shSpawn('mp4fragment', [
         path.resolve(dir + outputFile + '_audio' + format),
@@ -272,10 +259,6 @@ async function generate(data) {
     ])
         .then(function (response) {
             if (response == 0) {
-                console.log(
-                    `************************************
-                    ***************Se crea el .mp4 desde .264 ${resolutionX} ***************
-                    ************************************`);
                 count++;
                 percent = parseInt(count * 100 / step);
                 if (data.notification) {
@@ -292,9 +275,6 @@ async function generate(data) {
     await shSpawn('mp4dash', arrayMpd)
         .then(function (response) {
             if (response == 0) {
-                console.log(`************************************
-***************resize ${resolutionX} finished ***************
-************************************`)
                 fs.readFile(dir + 'mpd/manifest.mpd', 'utf-8', function (err, dataFile) {
                     if (err) throw err;
                     count++;
