@@ -116,7 +116,7 @@ Recommended       90Kbs     400 Kbps    750 Kbps    1000 Kbps   2500 Kbps   4500
 Minimum           100Kbs    300 Kbps    400 Kbps    500 Kbps    1500 Kbps   3000 Kbps
  */
 
-function getResolution(width, height, resolution) {
+function getResolution(width, height, resolution, qualities) {
     var result = {
         width: 0, height: 0,
         bitrate: [], fps: 30
@@ -127,37 +127,139 @@ function getResolution(width, height, resolution) {
             res = xY(width, height, 256);
             result.width = res.width;
             result.height = res.height;
-            result.bitrate = [80, 90, 100]
+            qualities.map(x => {
+                if (x == 'low') {
+                    result.bitrate.push({
+                        value: 80,
+                        type: x
+                    });
+                } else if (x == 'medium') {
+                    result.bitrate.push({
+                        value: 90,
+                        type: x
+                    });
+                } else if (x == 'high') {
+                    result.bitrate.push({
+                        value: 100,
+                        type: x
+                    });
+                }
+            });
             break;
         case '240p':
             res = xY(width, height, 426);
             result.width = res.width;
             result.height = res.height;
-            result.bitrate = [300, 400, 700]
+            qualities.map(x => {
+                if (x == 'low') {
+                    result.bitrate.push({
+                        value: 300,
+                        type: x
+                    });
+                } else if (x == 'medium') {
+                    result.bitrate.push({
+                        value: 400,
+                        type: x
+                    });
+                } else if (x == 'high') {
+                    result.bitrate.push({
+                        value: 700,
+                        type: x
+                    });
+                }
+            });
             break;
         case '360p':
             res = xY(width, height, 640);
             result.width = res.width;
             result.height = res.height;
-            result.bitrate = [400, 750, 1000]
+            qualities.map(x => {
+                if (x == 'low') {
+                    result.bitrate.push({
+                        value: 400,
+                        type: x
+                    });
+                } else if (x == 'medium') {
+                    result.bitrate.push({
+                        value: 750,
+                        type: x
+                    });
+                } else if (x == 'high') {
+                    result.bitrate.push({
+                        value: 1000,
+                        type: x
+                    });
+                }
+            });
             break;
         case '480p':
             res = xY(width, height, 854);
             result.width = res.width;
             result.height = res.height;
-            result.bitrate = [500, 1000, 2000]
+            qualities.map(x => {
+                if (x == 'low') {
+                    result.bitrate.push({
+                        value: 500,
+                        type: x
+                    });
+                } else if (x == 'medium') {
+                    result.bitrate.push({
+                        value: 1000,
+                        type: x
+                    });
+                } else if (x == 'high') {
+                    result.bitrate.push({
+                        value: 2000,
+                        type: x
+                    });
+                }
+            });
             break;
         case '720p':
             res = xY(width, height, 1280);
             result.width = res.width;
             result.height = res.height;
-            result.bitrate = [1500, 2500, 4000]
+            qualities.map(x => {
+                if (x == 'low') {
+                    result.bitrate.push({
+                        value: 1500,
+                        type: x
+                    });
+                } else if (x == 'medium') {
+                    result.bitrate.push({
+                        value: 2500,
+                        type: x
+                    });
+                } else if (x == 'high') {
+                    result.bitrate.push({
+                        value: 4000,
+                        type: x
+                    });
+                }
+            });
             break;
         case '1080p':
             res = xY(width, height, 1920);
             result.width = res.width;
             result.height = res.height;
-            result.bitrate = [3000, 4500, 6000]
+            qualities.map(x => {
+                if (x == 'low') {
+                    result.bitrate.push({
+                        value: 3000,
+                        type: x
+                    });
+                } else if (x == 'medium') {
+                    result.bitrate.push({
+                        value: 4500,
+                        type: x
+                    });
+                } else if (x == 'high') {
+                    result.bitrate.push({
+                        value: 6000,
+                        type: x
+                    });
+                }
+            });
             break;
     }
     return result;

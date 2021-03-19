@@ -11,9 +11,10 @@ var format264 = ".264";
 var formatMpd = ".mpd";
 var width = 0;
 var height = 0;
-var bitrate = 0;
+var bitrate = [];
 var fps = 0;
-var resolution = ['240p']//['720p', '480p', '360p', '240p'];
+var resolution = [];
+let qualities = ['low', 'medium', 'high'];
 var notification = null;
 
 
@@ -26,6 +27,8 @@ var notification = null;
  * path: "public/0x01A58",
  * inputFile: "0x01A58",
  * format: ".mkv",
+ * resolutions: [], //['720p', '480p', '360p', '240p', '144p']
+ * qualities: [], //Bitrates ['low', 'medium', 'high']
  * notification: emiter
  * }
  */
@@ -48,10 +51,20 @@ function main(data) {
  * path: "public/0x01A58",
  * inputFile: "0x01A58",
  * format: ".mkv",
+ * resolutions: [], //['720p', '480p', '360p', '240p', '144p']
+ * qualities: [], //Bitrates ['low', 'medium', 'high']
  * notification: emiter
  * }
  */
 
+generate({
+    path: "public/0x01A58",
+    inputFile: "0x01A58",
+    format: ".mp4",
+    resolutions: ['720p', '480p'],
+    qualities: ['medium', 'low'],
+    notification: ''
+})
 async function generate(data) {
     let dir = data.path;
     if (!dir.endsWith('/')) {
@@ -79,6 +92,8 @@ async function generate(data) {
     let subs;
     let videoLanguage;
     let frames;
+    let videos = [];
+    let fileToDelete = [];
 
     await shInfo(path.resolve(dir + inputFile + formatOrigin))
         .then(function (response) {
@@ -91,8 +106,6 @@ async function generate(data) {
         })
         .catch(err => console.log(err));
 
-
-
     /**
      * Verificando si es vertical u horizontal
      */
@@ -100,29 +113,64 @@ async function generate(data) {
         horizontal = false;
     }
 
-    /**
-     * Se verifica en que resoluciones se
-     * convertira partiendo de la original
-     */
-    if (horizontal) {
-        if (heightInitial >= 360 && heightInitial < 470) {
-            resolution = ['360p', '240p', '144p'];
-        } else if (heightInitial >= 470 && heightInitial < 710) {
-            resolution = ['480p', '360p', '240p', '144p'];
-        } else if (heightInitial >= 710) {
-            resolution = ['720p', '480p', '360p', '240p', '144p'];
+    if (data.resolutions && data.resolutions.length == 0) {
+        /**
+         * Se verifica en que resoluciones se
+         * convertira partiendo de la original
+         */
+        if (horizontal) {
+            if (heightInitial >= 360 && heightInitial < 470) {
+                resolution = ['360p', '240p', '144p'];
+            } else if (heightInitial >= 470 && heightInitial < 710) {
+                resolution = ['480p', '360p', '240p', '144p'];
+            } else if (heightInitial >= 710) {
+                resolution = ['720p', '480p', '360p', '240p', '144p'];
+            }
+        } else {
+            if (widthInitial >= 360 && widthInitial < 470) {
+                resolution = ['360p', '240p', '144p'];
+            } else if (widthInitial >= 470 && widthInitial < 710) {
+                resolution = ['480p', '360p', '240p', '144p'];
+            } else if (widthInitial >= 710) {
+                resolution = ['720p', '480p', '360p', '240p', '144p'];
+            }
         }
     } else {
-        if (widthInitial >= 360 && widthInitial < 470) {
-            resolution = ['360p', '240p', '144p'];
-        } else if (widthInitial >= 470 && widthInitial < 710) {
-            resolution = ['480p', '360p', '240p', '144p'];
-        } else if (widthInitial >= 710) {
-            resolution = ['720p', '480p', '360p', '240p', '144p'];
+        //Limitando la resolucion a 720p maximo
+        for (let i = 0; i < data.resolutions.length; i++) {
+            let x = data.resolutions[i];
+            if (horizontal) {
+                if (heightInitial >= 360 && heightInitial < 470 && ['360p', '240p', '144p'].includes(x)) {
+                    resolution.push(x);
+                } else if (heightInitial >= 470 && heightInitial < 710 && ['480p', '360p', '240p', '144p'].includes(x)) {
+                    resolution.push(x);
+                } else if (heightInitial >= 710 && ['720p', '480p', '360p', '240p', '144p'].includes(x)) {
+                    resolution.push(x);
+                }
+            } else {
+                if (widthInitial >= 360 && widthInitial < 470 && ['360p', '240p', '144p'].includes(x)) {
+                    resolution.push(x);
+                } else if (widthInitial >= 470 && widthInitial < 710 && ['480p', '360p', '240p', '144p'].includes(x)) {
+                    resolution.push(x);
+                } else if (widthInitial >= 710 && ['720p', '480p', '360p', '240p', '144p'].includes(x)) {
+                    resolution.push(x);
+                }
+            }
         }
     }
 
-    step += resolution.length * 3 * 2;
+    /**
+     * Asignando las calidaddes 
+     */
+    if (data.qualities.length > 0) {
+        qualities = data.qualities;
+    }
+
+    /**
+     * Los pasos son por cada resolucion y cada calidad dos videos
+     */
+    step += resolution.length * qualities.length * 2;
+
     /**
      * Comando para ejecutar la creacion del manifiesto
      * a este array se le anadira las partes de los videos, 
@@ -152,11 +200,22 @@ async function generate(data) {
 
     for (var i = 0; i < resolution.length; i++) {
         var resolutionX = resolution[i];
-        let a = getResolution(widthInitial, heightInitial, resolutionX);
+        let a = getResolution(widthInitial, heightInitial, resolutionX, qualities);
         width = a.width;
         height = a.height;
         bitrate = a.bitrate;
         fps = a.fps;
+
+        //#region llenamos este video para luego crear los ficheros download 
+        let bit = bitrate[0];
+        if (qualities.includes('medium')) {
+            bit = bitrate.filter(x => { return x.type == 'medium' })[0];
+        }
+        videos.push({
+            path: path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bit.value + format),
+            name: outputFile + '_' + resolutionX + format
+        });
+        //#endregion
 
         /**
          * Recorremos los bitrate, para convertir los videos
@@ -178,9 +237,9 @@ async function generate(data) {
                 path.resolve(dir + inputFile + formatOrigin),
                 '-an', '-sn', '-c:0', 'libx264', '-x264opts',
                 'keyint=24:min-keyint=24:no-scenecut',
-                '-b:v', bitrate[j] * 2 + 'k', '-maxrate', bitrate[j] * 2 + 'k',
-                '-bufsize', bitrate[j] + 'k', '-vf', 'scale=' + width + ':' + height,
-                path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j] + format),
+                '-b:v', bitrate[j].value * 2 + 'k', '-maxrate', bitrate[j].value * 2 + 'k',
+                '-bufsize', bitrate[j].value + 'k', '-vf', 'scale=' + width + ':' + height,
+                path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format),
             ], frames)
                 .then(function (response) {
                     if (response == 0) {
@@ -193,6 +252,7 @@ async function generate(data) {
                                 value: percent
                             });
                         }
+                        fileToDelete.push(path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format));
                     }
                 })
                 .catch(err => console.log(err));
@@ -204,9 +264,8 @@ async function generate(data) {
                  * 
                  */
                 await shSpawn('mp4fragment', [
-                    path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j] + format),
-
-                    path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j] + format)
+                    path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format),
+                    path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format)
                 ])
                     .then(function (response) {
                         if (response == 0) {
@@ -219,11 +278,12 @@ async function generate(data) {
                                     value: percent
                                 });
                             }
+                            fileToDelete.push(path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format));
                         }
                     })
                     .catch(err => console.log(err));
                 if (convertMp4) {
-                    arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j] + format));
+                    arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format));
                 }
             }
         }
@@ -249,15 +309,19 @@ async function generate(data) {
                     value: percent
                 });
             }
+            fileToDelete.push(path.resolve(dir + outputFile + '_audio' + format));
         })
         .catch(err => console.log(err));
 
+    /**
+     * Se crea el mp4 desde el 264 del audio
+     */
     await shSpawn('mp4fragment', [
         path.resolve(dir + outputFile + '_audio' + format),
 
         path.resolve(dir + 'f-' + outputFile + '_audio' + format)
     ])
-        .then(function (response) {
+        .then(async response => {
             if (response == 0) {
                 count++;
                 percent = parseInt(count * 100 / step);
@@ -267,6 +331,7 @@ async function generate(data) {
                         value: percent
                     });
                 }
+                fileToDelete.push(path.resolve(dir + 'f-' + outputFile + '_audio' + format));
             }
         })
     arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_audio' + format));
@@ -296,6 +361,40 @@ async function generate(data) {
         })
         .catch(err => console.log(err));
 
+
+    /**
+     * Ahora generaremos los ficheros para descargar
+     */
+
+    /** 
+    *
+    * Se saca el audio desde el original
+    */
+    await shSpawn('ffmpeg', [
+        '-i',
+        path.resolve(dir + inputFile + formatOrigin),
+        '-map', '0:1', '-ac', '2', '-ab', '192k', '-vn', '-sn',
+        path.resolve(dir + outputFile + '_audio' + '.mp3'),
+    ]).catch(err => console.log(err));
+    fileToDelete.push(path.resolve(dir + outputFile + '_audio' + '.mp3'));
+    await shSpawn('mkdir', [
+        dir + 'download'
+    ]).catch(err => console.log(err));
+
+    for (let i = 0; i < videos.length; i++) {
+        await shSpawn('ffmpeg', [
+            '-i',
+            videos[i].path,
+            '-i',
+            path.resolve(dir + outputFile + '_audio' + '.mp3'),
+            '-c', 'copy', '-map', '0:v:0', '-map', '1:a:0',
+            path.resolve(dir + 'download/' + videos[i].name),
+        ]).catch(err => console.log(err));
+        //elimino el video origen
+    }
+    for (let i = 0; i < fileToDelete.length; i++) {
+        await shSpawn('rm', [fileToDelete[i]]).catch(err => console.log(err));
+    }
 }
 
 module.exports = {
