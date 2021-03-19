@@ -339,7 +339,9 @@ async function generate(data) {
                     if (data.notification) {
                         data.notification.emit('progressVideoConvert', {
                             uuid: data.inputFile,
-                            value: percent
+                            value: percent,
+                            qualities: qualities,
+                            resolutions: resolution
                         });
                     }
                     var newValue = dataFile.replace(/initialization="/g, 'initialization="' + outputFile + '_');
