@@ -105,29 +105,7 @@ async function generate(data) {
         horizontal = false;
     }
 
-    if (data.resolutions && data.resolutions.length == 0) {
-        /**
-         * Se verifica en que resoluciones se
-         * convertira partiendo de la original
-         */
-        if (horizontal) {
-            if (heightInitial >= 360 && heightInitial < 470) {
-                resolution = ['360p', '240p', '144p'];
-            } else if (heightInitial >= 470 && heightInitial < 710) {
-                resolution = ['480p', '360p', '240p', '144p'];
-            } else if (heightInitial >= 710) {
-                resolution = ['720p', '480p', '360p', '240p', '144p'];
-            }
-        } else {
-            if (widthInitial >= 360 && widthInitial < 470) {
-                resolution = ['360p', '240p', '144p'];
-            } else if (widthInitial >= 470 && widthInitial < 710) {
-                resolution = ['480p', '360p', '240p', '144p'];
-            } else if (widthInitial >= 710) {
-                resolution = ['720p', '480p', '360p', '240p', '144p'];
-            }
-        }
-    } else {
+    if (data.resolutions && data.resolutions.length > 0) {
         //Limitando la resolucion a 720p maximo
         for (let i = 0; i < data.resolutions.length; i++) {
             let x = data.resolutions[i];
@@ -147,6 +125,30 @@ async function generate(data) {
                 } else if (widthInitial >= 710 && ['720p', '480p', '360p', '240p', '144p'].includes(x)) {
                     resolution.push(x);
                 }
+            }
+        }
+    }
+
+    if (data.resolutions && data.resolutions.length == 0 || resolution.length == 0) {
+        /**
+         * Se verifica en que resoluciones se
+         * convertira partiendo de la original
+         */
+        if (horizontal) {
+            if (heightInitial >= 360 && heightInitial < 470) {
+                resolution = ['360p', '240p', '144p'];
+            } else if (heightInitial >= 470 && heightInitial < 710) {
+                resolution = ['480p', '360p', '240p', '144p'];
+            } else if (heightInitial >= 710) {
+                resolution = ['720p', '480p', '360p', '240p', '144p'];
+            }
+        } else {
+            if (widthInitial >= 360 && widthInitial < 470) {
+                resolution = ['360p', '240p', '144p'];
+            } else if (widthInitial >= 470 && widthInitial < 710) {
+                resolution = ['480p', '360p', '240p', '144p'];
+            } else if (widthInitial >= 710) {
+                resolution = ['720p', '480p', '360p', '240p', '144p'];
             }
         }
     }
