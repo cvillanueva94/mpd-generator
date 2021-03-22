@@ -387,6 +387,7 @@ async function generate(data) {
         fileToDelete.push(path.resolve(dir + 'download/' + videos[i].name));
         //comprimo el download
         await shSpawn('zip', [
+            '-j',
             path.resolve(dir + 'download/' + videos[i].name + '.zip'),
             path.resolve(dir + 'download/' + videos[i].name),
         ]).catch(err => console.log(err));
