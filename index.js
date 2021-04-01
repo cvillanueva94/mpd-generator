@@ -9,13 +9,7 @@ var q = queue({
 var results = [];
 var format264 = ".264";
 var formatMpd = ".mpd";
-var width = 0;
-var height = 0;
-var bitrate = [];
 var fps = 0;
-var resolution = [];
-let qualities = ['low', 'medium', 'high'];
-var notification = null;
 
 
 
@@ -58,6 +52,15 @@ function main(data) {
  */
 
 async function generate(data) {
+
+    var width = 0;
+    var height = 0;
+    var bitrate = [];
+
+    var resolution = [];
+    let qualities = ['low', 'medium', 'high'];
+    var notification = null;
+
     let dir = data.path;
     if (!dir.endsWith('/')) {
         dir += '/';
