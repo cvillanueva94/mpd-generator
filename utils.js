@@ -82,27 +82,13 @@ async function shInfo(filePath) {
  * @return {Object} { stdout: String, stderr: String }
  */
 async function shSpawn(cmd, options) {
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
         const process = spawn(cmd, options);
-        process.on('close', function (code) { // Should probably be 'exit', not 'close'
-            // *** Process completed
-            resolve(code);
-        });
-
-        process.stdout.on('data', (data) => { console.log(`bb${data}`); });
-        process.stdout.on('end', function () { console.log(`finish`); })
-        process.stderr.on('data', (data) => {
-
-            let percent = data.toString('utf8');
-            if (percent.includes("%]")) {
-                percent = percent.split('[')[1].split('%]')[0];
-            }
-        });
-
-        process.on('error', function (err) {
-            // *** Process creation failed
-            reject(err);
-        });
+        process.on('close', code => { resolve(code); });
+        process.stdout.on('data', data => { console.log(`${data}`); });
+        process.stdout.on('end', () => { console.log(`finish`); });
+        process.stderr.on('data', data => { console.log(`${data}`); });
+        process.on('error', err => { reject(err); });
     });
 }
 
