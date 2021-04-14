@@ -6,12 +6,6 @@ const fs = require('fs');
 var q = queue({
     concurrency: 1
 });
-var results = [];
-var format264 = ".264";
-var formatMpd = ".mpd";
-var fps = 0;
-
-
 
 /**
  * 
@@ -59,14 +53,10 @@ async function generate(data) {
 
     var resolution = [];
     let qualities = ['low', 'medium', 'high'];
-    var notification = null;
 
     let dir = data.path;
     if (!dir.endsWith('/')) {
         dir += '/';
-    }
-    if (data.notification != null) {
-        notification = data.notification;
     }
     let inputFile = data.inputFile;
     let outputFile = data.inputFile;
@@ -82,10 +72,6 @@ async function generate(data) {
     //info video file
     let widthInitial = 0;
     let heightInitial = 0;
-    let aspect;
-    let size;
-    let subs;
-    let videoLanguage;
     let frames;
     let videos = [];
     let fileToDelete = [];
@@ -94,9 +80,6 @@ async function generate(data) {
         .then(function (response) {
             widthInitial = parseInt(response.width, 10);
             heightInitial = parseInt(response.height, 10);
-            aspect = response.display_aspect_ratio;
-            subs = response.subs;
-            videoLanguage = response.videoLanguage != 'und' ? response.videoLanguage : 'en-US';
             frames = response.frames;
         })
         .catch(err => console.log(err));
@@ -201,7 +184,6 @@ async function generate(data) {
         width = a.width;
         height = a.height;
         bitrate = a.bitrate;
-        fps = a.fps;
 
         //#region llenamos este video para luego crear los ficheros download 
         let bit = bitrate[0];
@@ -297,7 +279,7 @@ async function generate(data) {
         '-map', '0:1', '-ac', '2', '-ab', '192k', '-vn', '-sn',
         path.resolve(dir + outputFile + '_audio' + format),
     ])
-        .then(function (response) {
+        .then(() => {
             count++;
             percent = parseInt(count * 100 / step);
             if (data.notification) {

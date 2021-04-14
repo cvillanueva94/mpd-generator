@@ -13,7 +13,7 @@ exports.getResolution = getResolution;
  *   audios: String, subs: String, display_aspect_ratio: String,
  *   sample_aspect_ratio: String }
  */
-async function shInfo(filePath) {
+function shInfo(filePath) {
     return ffprobe(filePath, { path: ffprobeStatic.path })//, function (err, info) {
         .then(function (data) {
             let width;
@@ -27,17 +27,16 @@ async function shInfo(filePath) {
             let videoPositions = [];
             let audios = [];
             let subs = [];
-            let dataFinish = '';
             data.streams.forEach(element => {
                 switch (element.codec_type) {
                     case 'video':
 
                         videoPositions.push(element.index);
-                        try { videoLanguage = element.tags.language; } catch (e) { }
-                        try { width = element.width; } catch (e) { }
-                        try { height = element.height; } catch (e) { }
-                        try { sample_aspect_ratio = element.sample_aspect_ratio; } catch (e) { }
-                        try { display_aspect_ratio = element.display_aspect_ratio; } catch (e) { }
+                        try { videoLanguage = element.tags.language; } catch (e) { console.log(e) }
+                        try { width = element.width; } catch (e) { console.log(e) }
+                        try { height = element.height; } catch (e) { console.log(e) }
+                        try { sample_aspect_ratio = element.sample_aspect_ratio; } catch (e) { console.log(e) }
+                        try { display_aspect_ratio = element.display_aspect_ratio; } catch (e) { console.log(e) }
                         break;
 
                     case 'audio':
@@ -81,7 +80,7 @@ async function shInfo(filePath) {
  * @param {String} cmd
  * @return {Object} { stdout: String, stderr: String }
  */
-async function shSpawn(cmd, options) {
+function shSpawn(cmd, options) {
     return new Promise((resolve, reject) => {
         const process = spawn(cmd, options);
         process.on('close', code => { resolve(code); });
