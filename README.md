@@ -71,12 +71,14 @@ $ npm i mpd-generator --save
 ## Usage
 
 ```javascript
-var mpd_generator = require("mpd-generator");
+const mpd_generator = require("mpd-generator");
 
-var data = {
+const data = {
   path: "public/0x01A58",
   inputFile: "0x01A58",
   format: ".mkv",
+    resolutions: [], //['720p', '480p', '360p', '240p', '144p']
+    qualities: [], //Bitrates ['low', 'medium', 'high']
 };
 
 mpd_generator.main(data);

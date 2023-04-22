@@ -1,16 +1,16 @@
-var queue = require('queue');
-const { shInfo, shSpawn, getResolution } = require('./utils');
+const queue = require('queue');
+const {shInfo, shSpawn, getResolution} = require('./utils');
 const path = require('path');
 const fs = require('fs');
 
-var q = queue({
+const q = queue({
     concurrency: 1
 });
 
 /**
- * 
- * @param {*} data 
- * 
+ *
+ * @param {*} data
+ *
  * data={
  * path: "public/0x01A58",
  * inputFile: "0x01A58",
@@ -31,10 +31,31 @@ function main(data) {
     })
 }
 
+/***
+ * Definimos la función isValidResolution para validar si una resolución es válida
+ * @param {string} resolution - La resolución a validar
+ * @param {number} width - El ancho de la imagen o video
+ * @param {number} height - La altura de la imagen o video
+ * @returns {boolean} - True si la resolución es válida, false si no lo es
+ ***/
+const isValidResolution = (resolution, width, height) => {
+    const resolutions = ['144p', '240p', '360p', '480p', '720p'];
+
+    if (width >= 360 && width < 470) {
+        return resolutions.indexOf(resolution) !== -1 && height >= 360 && height < 710;
+    } else if (width >= 470 && width < 710) {
+        return resolutions.indexOf(resolution) !== -1 && height >= 470 && height < 710;
+    } else if (width >= 710) {
+        return resolutions.indexOf(resolution) !== -1 && height >= 710;
+    } else {
+        return false;
+    }
+}
+
 /**
- * 
- * @param {*} data 
- * 
+ *
+ * @param {*} data
+ *
  * data={
  * path: "public/0x01A58",
  * inputFile: "0x01A58",
@@ -45,13 +66,13 @@ function main(data) {
  * }
  */
 
-async function generate(data) {
+const generate = async (data) => {
 
-    var width = 0;
-    var height = 0;
-    var bitrate = [];
+    let width = 0;
+    let height = 0;
+    let bitrate = [];
 
-    var resolution = [];
+    let resolution = [];
     let qualities = ['low', 'medium', 'high'];
 
     let dir = data.path;
@@ -92,55 +113,45 @@ async function generate(data) {
     }
 
     if (data.resolutions && data.resolutions.length > 0) {
-        //Limitando la resolucion a 720p maximo
-        for (let i = 0; i < data.resolutions.length; i++) {
-            let x = data.resolutions[i];
+        // Limitando la resolución a 720p máximo
+        resolution = data.resolutions.filter((x) => {
             if (horizontal) {
-                if (heightInitial >= 360 && heightInitial < 470 && ['360p', '240p', '144p'].includes(x)) {
-                    resolution.push(x);
-                } else if (heightInitial >= 470 && heightInitial < 710 && ['480p', '360p', '240p', '144p'].includes(x)) {
-                    resolution.push(x);
-                } else if (heightInitial >= 710 && ['720p', '480p', '360p', '240p', '144p'].includes(x)) {
-                    resolution.push(x);
-                }
+                return isValidResolution(x, widthInitial, heightInitial);
             } else {
-                if (widthInitial >= 360 && widthInitial < 470 && ['360p', '240p', '144p'].includes(x)) {
-                    resolution.push(x);
-                } else if (widthInitial >= 470 && widthInitial < 710 && ['480p', '360p', '240p', '144p'].includes(x)) {
-                    resolution.push(x);
-                } else if (widthInitial >= 710 && ['720p', '480p', '360p', '240p', '144p'].includes(x)) {
-                    resolution.push(x);
-                }
+                return isValidResolution(x, heightInitial, widthInitial);
             }
-        }
+        });
     }
 
-    if (data.resolutions && data.resolutions.length == 0 || resolution.length == 0) {
+    if (!data.resolutions || data.resolutions.length === 0 || resolution.length === 0) {
         /**
-         * Se verifica en que resoluciones se
-         * convertira partiendo de la original
+         * Si no hay resoluciones en los datos o la variable resolution está vacía,
+         * se generan las resoluciones a partir del tamaño original de la imagen o video
          */
-        if (horizontal) {
-            if (heightInitial >= 360 && heightInitial < 470) {
-                resolution = ['360p', '240p', '144p'];
-            } else if (heightInitial >= 470 && heightInitial < 710) {
-                resolution = ['480p', '360p', '240p', '144p'];
-            } else if (heightInitial >= 710) {
-                resolution = ['720p', '480p', '360p', '240p', '144p'];
-            }
-        } else {
-            if (widthInitial >= 360 && widthInitial < 470) {
-                resolution = ['360p', '240p', '144p'];
-            } else if (widthInitial >= 470 && widthInitial < 710) {
-                resolution = ['480p', '360p', '240p', '144p'];
-            } else if (widthInitial >= 710) {
-                resolution = ['720p', '480p', '360p', '240p', '144p'];
-            }
+        const resolutionsBySize = {
+            360: ['360p', '240p', '144p'],
+            470: ['480p', '360p', '240p', '144p'],
+            710: ['720p', '480p', '360p', '240p', '144p'],
+        };
+
+        const size = horizontal ? heightInitial : widthInitial;
+
+        // Se determina a qué rango de resolución pertenece el tamaño original
+        let range = 0;
+        if (size >= 360 && size < 470) {
+            range = 360;
+        } else if (size >= 470 && size < 710) {
+            range = 470;
+        } else if (size >= 710) {
+            range = 710;
         }
+
+        // Se generan las resoluciones a partir del rango de tamaño
+        resolution = resolutionsBySize[range];
     }
 
     /**
-     * Asignando las calidaddes 
+     * Asignando las calidaddes
      */
     if (data.qualities.length > 0) {
         qualities = data.qualities;
@@ -153,11 +164,11 @@ async function generate(data) {
 
     /**
      * Comando para ejecutar la creacion del manifiesto
-     * a este array se le anadira las partes de los videos, 
+     * a este array se le anadira las partes de los videos,
      * audios y subtitulos que faltan.
      */
 
-    var arrayMpd = [
+    const arrayMpd = [
         '--mpd-name=manifest.mpd',
         '-o', dir + 'mpd/'
     ];
@@ -165,21 +176,21 @@ async function generate(data) {
 
     /**
      * Siguiendo a Youtbe https://support.google.com/youtube/answer/2853702?hl=en
-     * 
+     *
      * fps:30
-     * 
+     *
      * Por ahora todo esta x el recomendado de lo que se muestra a continuacion
-     *  
-                        144p        240p       360p        480p        720p        1080p
-        Resolution      256x144    426 x 240   640 x 360   854x480     1280x720    1920x1080
-        Video Bitrates                   
-        Maximum         100Kbs     700 Kbps    1000 Kbps   2000 Kbps   4000 Kbps   6000 Kbps
-        Recommended     90Kbs      400 Kbps    750 Kbps    1000 Kbps   2500 Kbps   4500 Kbps
-        Minimum         80Kbs      300 Kbps    400 Kbps    500 Kbps    1500 Kbps   3000 Kbps
+     *
+     144p        240p       360p        480p        720p        1080p
+     Resolution      256x144    426 x 240   640 x 360   854x480     1280x720    1920x1080
+     Video Bitrates
+     Maximum         100Kbs     700 Kbps    1000 Kbps   2000 Kbps   4000 Kbps   6000 Kbps
+     Recommended     90Kbs      400 Kbps    750 Kbps    1000 Kbps   2500 Kbps   4500 Kbps
+     Minimum         80Kbs      300 Kbps    400 Kbps    500 Kbps    1500 Kbps   3000 Kbps
      */
 
-    for (var i = 0; i < resolution.length; i++) {
-        var resolutionX = resolution[i];
+    for (let i = 0; i < resolution.length; i++) {
+        const resolutionX = resolution[i];
         let a = getResolution(widthInitial, heightInitial, resolutionX, qualities);
         width = a.width;
         height = a.height;
@@ -188,7 +199,9 @@ async function generate(data) {
         //#region llenamos este video para luego crear los ficheros download 
         let bit = bitrate[0];
         if (qualities.includes('medium')) {
-            bit = bitrate.filter(x => { return x.type == 'medium' })[0];
+            bit = bitrate.filter(x => {
+                return x.type == 'medium'
+            })[0];
         }
         videos.push({
             path: path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bit.value + format),
@@ -199,18 +212,18 @@ async function generate(data) {
         /**
          * Recorremos los bitrate, para convertir los videos
          */
-        for (var j = 0; j < bitrate.length; j++) {
+        for (let j = 0; j < bitrate.length; j++) {
             let convertFlag = false;
             let convertMp4 = false;
             /**
-            * Vamos a probar convertir un video
-            * Manteniendo el ancho
-            * 
-            * resize:width=720,fittobox=width
-            * 
-            * Se crea el .264 desde el formatio original en las 
-            * diferentes resoluciones
-            */
+             * Vamos a probar convertir un video
+             * Manteniendo el ancho
+             *
+             * resize:width=720,fittobox=width
+             *
+             * Se crea el .264 desde el formatio original en las
+             * diferentes resoluciones
+             */
             await shSpawn('ffmpeg', [
                 '-i',
                 path.resolve(dir + inputFile + formatOrigin),
@@ -238,9 +251,9 @@ async function generate(data) {
 
             if (convertFlag) {
                 /**
-                 * 
+                 *
                  * Se genere el mp4 desde el .264 creado anteriormente
-                 * 
+                 *
                  */
                 await shSpawn('mp4fragment', [
                     path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format),
@@ -269,9 +282,9 @@ async function generate(data) {
     }
 
     /**
-     * 
+     *
      * Se saca el audio desde el original
-     * 
+     *
      */
     await shSpawn('ffmpeg', [
         '-i',
@@ -331,7 +344,7 @@ async function generate(data) {
                             resolutions: resolution
                         });
                     }
-                    var newValue = dataFile.replace(/initialization="/g, 'initialization="' + outputFile + '_');
+                    let newValue = dataFile.replace(/initialization="/g, 'initialization="' + outputFile + '_');
                     newValue = newValue.replace(/ media="/g, ' media="' + outputFile + '_');
                     fs.writeFile(dir + 'mpd/' + outputFile + '.mpd', newValue, 'utf-8', function (err) {
                         if (err) throw err;
@@ -347,10 +360,10 @@ async function generate(data) {
      * Ahora generaremos los ficheros para descargar
      */
 
-    /** 
-    *
-    * Se saca el audio desde el original
-    */
+    /**
+     *
+     * Se saca el audio desde el original
+     */
     await shSpawn('ffmpeg', [
         '-i',
         path.resolve(dir + inputFile + formatOrigin),
