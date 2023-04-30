@@ -200,7 +200,7 @@ const generate = async (data) => {
         let bit = bitrate[0];
         if (qualities.includes('medium')) {
             bit = bitrate.filter(x => {
-                return x.type == 'medium'
+                return x.type === 'medium'
             })[0];
         }
         videos.push({
@@ -224,18 +224,46 @@ const generate = async (data) => {
              * Se crea el .264 desde el formatio original en las
              * diferentes resoluciones
              */
-            await shSpawn('ffmpeg', [
-                '-i',
-                path.resolve(dir + inputFile + formatOrigin),
-                '-an', '-sn', '-c:0', 'libx264', '-x264opts',
-                'keyint=24:min-keyint=24:no-scenecut',
-                '-b:v', bitrate[j].value * 2 + 'k', '-maxrate', bitrate[j].value * 2 + 'k',
-                '-bufsize', bitrate[j].value + 'k', '-vf', 'scale=' + width + ':' + height,
-                path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format),
-            ], frames)
-                .then(function (response) {
-                    if (response == 0) {
-                        convertFlag = true;
+            try {
+                const response = await shSpawn('ffmpeg', [
+                    '-i',
+                    path.resolve(dir + inputFile + formatOrigin),
+                    '-an', '-sn', '-c:0', 'libx264', '-x264opts',
+                    'keyint=24:min-keyint=24:no-scenecut',
+                    '-b:v', bitrate[j].value * 2 + 'k', '-maxrate', bitrate[j].value * 2 + 'k',
+                    '-bufsize', bitrate[j].value + 'k', '-vf', 'scale=' + width + ':' + height,
+                    path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format),
+                ], frames)
+                if (response === 0) {
+                    convertFlag = true;
+                    count++;
+                    percent = parseInt(count * 100 / step);
+                    if (data.notification) {
+                        data.notification.emit('progressVideoConvert', {
+                            uuid: data.inputFile,
+                            value: percent
+                        });
+                    }
+                    fileToDelete.push(path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format));
+                }
+            } catch (err) {
+                console.log(err)
+            }
+
+
+            if (convertFlag) {
+                /**
+                 *
+                 * Se genere el mp4 desde el .264 creado anteriormente
+                 *
+                 */
+                try {
+                    const response = await shSpawn('mp4fragment', [
+                        path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format),
+                        path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format)
+                    ])
+                    if (response === 0) {
+                        convertMp4 = true;
                         count++;
                         percent = parseInt(count * 100 / step);
                         if (data.notification) {
@@ -244,36 +272,11 @@ const generate = async (data) => {
                                 value: percent
                             });
                         }
-                        fileToDelete.push(path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format));
+                        fileToDelete.push(path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format));
                     }
-                })
-                .catch(err => console.log(err));
-
-            if (convertFlag) {
-                /**
-                 *
-                 * Se genere el mp4 desde el .264 creado anteriormente
-                 *
-                 */
-                await shSpawn('mp4fragment', [
-                    path.resolve(dir + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format),
-                    path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format)
-                ])
-                    .then(function (response) {
-                        if (response == 0) {
-                            convertMp4 = true;
-                            count++;
-                            percent = parseInt(count * 100 / step);
-                            if (data.notification) {
-                                data.notification.emit('progressVideoConvert', {
-                                    uuid: data.inputFile,
-                                    value: percent
-                                });
-                            }
-                            fileToDelete.push(path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format));
-                        }
-                    })
-                    .catch(err => console.log(err));
+                } catch (err) {
+                    console.log(err)
+                }
                 if (convertMp4) {
                     arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_' + resolutionX + '_' + bitrate[j].value + format));
                 }
@@ -286,13 +289,16 @@ const generate = async (data) => {
      * Se saca el audio desde el original
      *
      */
-    await shSpawn('ffmpeg', [
-        '-i',
-        path.resolve(dir + inputFile + formatOrigin),
-        '-map', '0:1', '-ac', '2', '-ab', '192k', '-vn', '-sn',
-        path.resolve(dir + outputFile + '_audio' + format),
-    ])
-        .then(() => {
+    let originalAudio = false
+    try {
+        const response = await shSpawn('ffmpeg', [
+            '-i',
+            path.resolve(dir + inputFile + formatOrigin),
+            '-map', '0:1', '-ac', '2', '-ab', '192k', '-vn', '-sn',
+            path.resolve(dir + outputFile + '_audio' + format),
+        ])
+        if (response === 0) {
+            originalAudio = true
             count++;
             percent = parseInt(count * 100 / step);
             if (data.notification) {
@@ -302,19 +308,22 @@ const generate = async (data) => {
                 });
             }
             fileToDelete.push(path.resolve(dir + outputFile + '_audio' + format));
-        })
-        .catch(err => console.log(err));
+        }
+    } catch (err) {
+        console.log(err)
+    }
 
     /**
      * Se crea el mp4 desde el 264 del audio
      */
-    await shSpawn('mp4fragment', [
-        path.resolve(dir + outputFile + '_audio' + format),
+    if (originalAudio) {
 
-        path.resolve(dir + 'f-' + outputFile + '_audio' + format)
-    ])
-        .then(async response => {
-            if (response == 0) {
+        try {
+            const response = await shSpawn('mp4fragment', [
+                path.resolve(dir + outputFile + '_audio' + format),
+                path.resolve(dir + 'f-' + outputFile + '_audio' + format)
+            ])
+            if (response === 0) {
                 count++;
                 percent = parseInt(count * 100 / step);
                 if (data.notification) {
@@ -324,36 +333,40 @@ const generate = async (data) => {
                     });
                 }
                 fileToDelete.push(path.resolve(dir + 'f-' + outputFile + '_audio' + format));
+                arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_audio' + format));
             }
-        })
-    arrayMpd.push(path.resolve(dir + 'f-' + outputFile + '_audio' + format));
+        } catch (err) {
+            console.log(err)
+        }
+    }
 
     //Se crea el mpd
-    await shSpawn('mp4dash', arrayMpd)
-        .then(function (response) {
-            if (response == 0) {
-                fs.readFile(dir + 'mpd/manifest.mpd', 'utf-8', function (err, dataFile) {
-                    if (err) throw err;
-                    count++;
-                    percent = parseInt(count * 100 / step);
-                    if (data.notification) {
-                        data.notification.emit('progressVideoConvert', {
-                            uuid: data.inputFile,
-                            value: percent,
-                            qualities: qualities,
-                            resolutions: resolution
-                        });
-                    }
-                    let newValue = dataFile.replace(/initialization="/g, 'initialization="' + outputFile + '_');
-                    newValue = newValue.replace(/ media="/g, ' media="' + outputFile + '_');
-                    fs.writeFile(dir + 'mpd/' + outputFile + '.mpd', newValue, 'utf-8', function (err) {
-                        if (err) throw err;
-                        console.log('filelistAsync complete');
+    try {
+        const response = await shSpawn('mp4dash', arrayMpd)
+        if (response === 0) {
+            fs.readFile(dir + 'mpd/manifest.mpd', 'utf-8', function (err, dataFile) {
+                if (err) throw err;
+                count++;
+                percent = parseInt(count * 100 / step);
+                if (data.notification) {
+                    data.notification.emit('progressVideoConvert', {
+                        uuid: data.inputFile,
+                        value: percent,
+                        qualities: qualities,
+                        resolutions: resolution
                     });
+                }
+                let newValue = dataFile.replace(/initialization="/g, 'initialization="' + outputFile + '_');
+                newValue = newValue.replace(/ media="/g, ' media="' + outputFile + '_');
+                fs.writeFile(dir + 'mpd/' + outputFile + '.mpd', newValue, 'utf-8', function (err) {
+                    if (err) throw err;
+                    console.log('filelistAsync complete');
                 });
-            }
-        })
-        .catch(err => console.log(err));
+            });
+        }
+    } catch (err) {
+        console.log(err)
+    }
 
 
     /**
@@ -364,36 +377,69 @@ const generate = async (data) => {
      *
      * Se saca el audio desde el original
      */
-    await shSpawn('ffmpeg', [
-        '-i',
-        path.resolve(dir + inputFile + formatOrigin),
-        '-map', '0:1', '-ac', '2', '-ab', '192k', '-vn', '-sn',
-        path.resolve(dir + outputFile + '_audio' + '.mp3'),
-    ]).catch(err => console.log(err));
-    fileToDelete.push(path.resolve(dir + outputFile + '_audio' + '.mp3'));
-    await shSpawn('mkdir', [
-        dir + 'download'
-    ]).catch(err => console.log(err));
+    let existAudio = false
+    try {
+        const resolve = await shSpawn('ffmpeg', [
+            '-i',
+            path.resolve(dir + inputFile + formatOrigin),
+            '-map', '0:1', '-ac', '2', '-ab', '192k', '-vn', '-sn',
+            path.resolve(dir + outputFile + '_audio' + '.mp3'),
+        ])
+        if (resolve === 0) {
+            existAudio = true
+            fileToDelete.push(path.resolve(dir + outputFile + '_audio' + '.mp3'));
+        }
+
+    } catch (err) {
+        console.log(err)
+    }
+
+
+    try {
+        await shSpawn('mkdir', [
+            dir + 'download'
+        ])
+    } catch (err) {
+        console.log(err)
+    }
 
     for (let i = 0; i < videos.length; i++) {
-        await shSpawn('ffmpeg', [
-            '-i',
-            videos[i].path,
-            '-i',
-            path.resolve(dir + outputFile + '_audio' + '.mp3'),
-            '-c', 'copy', '-map', '0:v:0', '-map', '1:a:0',
-            path.resolve(dir + 'download/' + videos[i].name),
-        ]).catch(err => console.log(err));
-        fileToDelete.push(path.resolve(dir + 'download/' + videos[i].name));
+        try {
+            const options = ['-i', videos[i].path]
+            if (existAudio) {
+                options.push('-i')
+                options.push(path.resolve(dir + outputFile + '_audio' + '.mp3'))
+                options.push('-c', 'copy', '-map', '0:v:0', '-map', '1:a:0')
+            }
+
+            options.push(path.resolve(dir + 'download/' + videos[i].name))
+
+            const resolve = await shSpawn('ffmpeg', options)
+            if (resolve === 0) {
+                fileToDelete.push(path.resolve(dir + 'download/' + videos[i].name));
+            }
+        } catch (err) {
+            console.log(err)
+        }
+
+
         //comprimo el download
-        await shSpawn('zip', [
-            '-j',
-            path.resolve(dir + 'download/' + videos[i].name + '.zip'),
-            path.resolve(dir + 'download/' + videos[i].name),
-        ]).catch(err => console.log(err));
+        try {
+            await shSpawn('zip', [
+                '-j',
+                path.resolve(dir + 'download/' + videos[i].name + '.zip'),
+                path.resolve(dir + 'download/' + videos[i].name),
+            ])
+        } catch (err) {
+            console.log(err)
+        }
     }
-    for (let i = 0; i < fileToDelete.length; i++) {
-        await shSpawn('rm', [fileToDelete[i]]).catch(err => console.log(err));
+    for (const file of fileToDelete) {
+        try {
+            await shSpawn('rm', [file])
+        } catch (err) {
+            console.log(err)
+        }
     }
 }
 
